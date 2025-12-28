@@ -1,0 +1,13 @@
+{
+  "name": "plannotator-marketplace",
+  "owner": {
+    "name": "backnotprop"
+  },
+  "plugins": [
+    {
+      "name": "plannotator",
+      "source": "./apps/hook",
+      "description": "Interactive Plan Review: Mark up and refine your plans using native Claude Code hooks, then easily share for team collaboration."
+    }
+  ]
+}

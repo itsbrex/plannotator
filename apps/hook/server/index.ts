@@ -4,16 +4,26 @@
  * Spawned by ExitPlanMode hook to serve Plannotator UI and handle approve/deny decisions.
  * Uses random port to support multiple concurrent Claude Code sessions.
  *
- * Usage: bun run server/index.ts "<plan markdown content>"
+ * Reads hook event from stdin, extracts plan content, serves UI, returns decision.
  */
 
 import { $ } from "bun";
 import { join, dirname } from "path";
 
-const planContent = process.argv[2] || Bun.env.PLAN_CONTENT || "";
+// Read hook event from stdin
+const eventJson = await Bun.stdin.text();
+
+let planContent = "";
+try {
+  const event = JSON.parse(eventJson);
+  planContent = event.tool_input?.plan || "";
+} catch {
+  console.error("Failed to parse hook event from stdin");
+  process.exit(1);
+}
 
 if (!planContent) {
-  console.error("No plan content provided. Usage: bun run server/index.ts \"<plan>\"");
+  console.error("No plan content in hook event");
   process.exit(1);
 }
 
@@ -63,7 +73,6 @@ const server = Bun.serve({
 
     const file = Bun.file(join(distDir, filePath));
     if (await file.exists()) {
-      // Set appropriate content types
       const contentType = getContentType(filePath);
       return new Response(file, {
         headers: contentType ? { "Content-Type": contentType } : {}

@@ -3,10 +3,10 @@
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev:hooks": "bun run --cwd apps/hooks dev",
+    "dev:hook": "bun run --cwd apps/hook dev",
     "dev:portal": "bun run --cwd apps/portal dev",
     "dev:marketing": "bun run --cwd apps/marketing dev",
-    "build:hooks": "bun run --cwd apps/hooks build",
+    "build:hook": "bun run --cwd apps/hook build",
     "build:portal": "bun run --cwd apps/portal build",
     "build:marketing": "bun run --cwd apps/marketing build"
   }
