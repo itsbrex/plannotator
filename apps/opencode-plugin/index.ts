@@ -103,19 +103,16 @@ Do NOT proceed with implementation until your plan is approved.
             const shouldSwitchAgent = result.agentSwitch && result.agentSwitch !== 'disabled';
             const targetAgent = result.agentSwitch || 'build';
 
-            // Use noReply: true to ensure message is created before we return
-            // (same pattern as submit_plan tool to avoid race conditions)
-            // Note: We don't call agent_cycle here - session.prompt with agent handles the switch
+            // Send feedback to agent - it will automatically respond and address it
             try {
               await ctx.client.session.prompt({
                 path: { id: sessionId },
                 body: {
                   ...(shouldSwitchAgent && { agent: targetAgent }),
-                  noReply: true,
                   parts: [
                     {
                       type: "text",
-                      text: `# Code Review Feedback\n\n${result.feedback}`,
+                      text: `# Code Review Feedback\n\n${result.feedback}\n\nPlease address this feedback.`,
                     },
                   ],
                 },
