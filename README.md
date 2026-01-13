@@ -71,12 +71,13 @@ Add to your `opencode.json`:
 }
 ```
 
-Restart OpenCode and the `submit_plan` tool will be available.
+**Run the install script** to get `/plannotator-review`:
 
-> **Existing users:** If you're stuck on an old version, clear both caches and restart:
-> ```bash
-> rm -rf ~/.cache/opencode/node_modules/@plannotator ~/.bun/install/cache/@plannotator
-> ```
+```bash
+curl -fsSL https://plannotator.ai/install.sh | bash
+```
+
+This also clears any cached plugin versions. Then restart OpenCode.
 
 ---
 
