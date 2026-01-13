@@ -103,19 +103,9 @@ Do NOT proceed with implementation until your plan is approved.
             const shouldSwitchAgent = result.agentSwitch && result.agentSwitch !== 'disabled';
             const targetAgent = result.agentSwitch || 'build';
 
-            if (shouldSwitchAgent) {
-              // Switch TUI display to target agent
-              try {
-                await ctx.client.tui.executeCommand({
-                  body: { command: "agent_cycle" },
-                });
-              } catch {
-                // Silently fail
-              }
-            }
-
             // Use noReply: true to ensure message is created before we return
             // (same pattern as submit_plan tool to avoid race conditions)
+            // Note: We don't call agent_cycle here - session.prompt with agent handles the switch
             try {
               await ctx.client.session.prompt({
                 path: { id: sessionId },
