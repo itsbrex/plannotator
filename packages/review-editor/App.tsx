@@ -3,6 +3,7 @@ import { ThemeProvider, useTheme } from '@plannotator/ui/components/ThemeProvide
 import { ModeToggle } from '@plannotator/ui/components/ModeToggle';
 import { ConfirmDialog } from '@plannotator/ui/components/ConfirmDialog';
 import { Settings } from '@plannotator/ui/components/Settings';
+import { UpdateBanner } from '@plannotator/ui/components/UpdateBanner';
 import { storage } from '@plannotator/ui/utils/storage';
 import { getIdentity } from '@plannotator/ui/utils/identity';
 import { getAgentSwitchSettings, getEffectiveAgentName } from '@plannotator/ui/utils/agentSwitch';
@@ -835,6 +836,9 @@ const ReviewApp: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Update notification */}
+        <UpdateBanner origin={origin} />
       </div>
     </ThemeProvider>
   );
