@@ -1,5 +1,5 @@
 /**
- * Note-taking app integrations (Obsidian, Bear)
+ * Note-taking app integrations (Obsidian, Bear, Hookmark)
  */
 
 import { $ } from "bun";
@@ -17,6 +17,11 @@ export interface ObsidianConfig {
 
 export interface BearConfig {
   plan: string;
+}
+
+export interface HookmarkConfig {
+  planPath: string;
+  projectPath: string;
 }
 
 export interface IntegrationResult {
@@ -248,6 +253,65 @@ export async function saveToBear(config: BearConfig): Promise<IntegrationResult>
 
     // Open Bear via URL scheme
     await $`open ${url}`.quiet();
+
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return { success: false, error: message };
+  }
+}
+
+// --- Hookmark Integration ---
+
+/**
+ * Get the project root path (git root or cwd fallback)
+ */
+export async function getProjectPath(): Promise<string> {
+  try {
+    const result = await $`git rev-parse --show-toplevel`.quiet().nothrow();
+    if (result.exitCode === 0) {
+      return result.stdout.toString().trim();
+    }
+  } catch {
+    // Not in a git repo
+  }
+  return process.cwd();
+}
+
+/**
+ * Create a bidirectional Hookmark link between a saved plan file and the project folder.
+ * macOS only — silently returns success on other platforms.
+ */
+export async function saveToHookmark(config: HookmarkConfig): Promise<IntegrationResult> {
+  if (process.platform !== "darwin") {
+    return { success: true };
+  }
+
+  try {
+    const { planPath, projectPath } = config;
+
+    // Escape single quotes for AppleScript string literals
+    const esc = (s: string) => s.replace(/'/g, "'\\''");
+
+    // Use "make bookmark with data" (file:// URL) because
+    // Hookmark's "address" property is read-only.
+    const planUrl = `file://${planPath}`;
+    const projUrl = `file://${projectPath}`;
+
+    const script = [
+      'tell application "Hookmark"',
+      `  set planBm to make bookmark with data "${esc(planUrl)}"`,
+      `  set projBm to make bookmark with data "${esc(projUrl)}"`,
+      '  hook planBm and projBm',
+      'end tell',
+    ].join('\n');
+
+    const result = await $`osascript -e ${script}`.quiet().nothrow();
+
+    if (result.exitCode !== 0) {
+      const stderr = result.stderr.toString().trim();
+      return { success: false, error: stderr || "Hookmark AppleScript failed" };
+    }
 
     return { success: true };
   } catch (err) {

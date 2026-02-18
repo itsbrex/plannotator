@@ -17,8 +17,11 @@ import {
   detectObsidianVaults,
   saveToObsidian,
   saveToBear,
+  saveToHookmark,
+  getProjectPath,
   type ObsidianConfig,
   type BearConfig,
+  type HookmarkConfig,
   type IntegrationResult,
 } from "./integrations";
 import {
@@ -254,10 +257,12 @@ export async function startPlannotatorServer(
             let requestedPermissionMode: string | undefined;
             let planSaveEnabled = true; // default to enabled for backwards compat
             let planSaveCustomPath: string | undefined;
+            let hookmarkEnabled = false;
             try {
               const body = (await req.json().catch(() => ({}))) as {
                 obsidian?: ObsidianConfig;
                 bear?: BearConfig;
+                hookmark?: { enabled: boolean };
                 feedback?: string;
                 agentSwitch?: string;
                 planSave?: { enabled: boolean; customPath?: string };
@@ -304,6 +309,11 @@ export async function startPlannotatorServer(
                   console.error(`[Bear] Save failed: ${result.error}`);
                 }
               }
+
+              // Hookmark integration (deferred until after plan save)
+              if (body.hookmark?.enabled) {
+                hookmarkEnabled = true;
+              }
             } catch (err) {
               // Don't block approval on integration errors
               console.error(`[Integration] Error:`, err);
@@ -317,6 +327,21 @@ export async function startPlannotatorServer(
                 saveAnnotations(slug, diff, planSaveCustomPath);
               }
               savedPath = saveFinalSnapshot(slug, "approved", plan, diff, planSaveCustomPath);
+            }
+
+            // Hookmark integration — link saved plan to project folder (after save so we have savedPath)
+            if (hookmarkEnabled && savedPath) {
+              try {
+                const projectPath = await getProjectPath();
+                const result = await saveToHookmark({ planPath: savedPath, projectPath });
+                if (result.success) {
+                  console.error(`[Hookmark] Linked plan to: ${projectPath}`);
+                } else {
+                  console.error(`[Hookmark] Link failed: ${result.error}`);
+                }
+              } catch (err) {
+                console.error(`[Hookmark] Error:`, err);
+              }
             }
 
             // Use permission mode from client request if provided, otherwise fall back to hook input

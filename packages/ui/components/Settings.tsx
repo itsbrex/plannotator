@@ -14,6 +14,11 @@ import {
   type BearSettings,
 } from '../utils/bear';
 import {
+  getHookmarkSettings,
+  saveHookmarkSettings,
+  type HookmarkSettings,
+} from '../utils/hookmark';
+import {
   getAgentSwitchSettings,
   saveAgentSwitchSettings,
   AGENT_OPTIONS,
@@ -67,6 +72,7 @@ export const Settings: React.FC<SettingsProps> = ({ taterMode, onTaterModeChange
   const [detectedVaults, setDetectedVaults] = useState<string[]>([]);
   const [vaultsLoading, setVaultsLoading] = useState(false);
   const [bear, setBear] = useState<BearSettings>({ enabled: false });
+  const [hookmark, setHookmark] = useState<HookmarkSettings>({ enabled: false });
   const [agent, setAgent] = useState<AgentSwitchSettings>({ switchTo: 'build' });
   const [planSave, setPlanSave] = useState<PlanSaveSettings>({ enabled: true, customPath: null });
   const [uiPrefs, setUiPrefs] = useState<UIPreferences>({ tocEnabled: true, stickyActionsEnabled: true });
@@ -92,6 +98,7 @@ export const Settings: React.FC<SettingsProps> = ({ taterMode, onTaterModeChange
       setIdentity(getIdentity());
       setObsidian(getObsidianSettings());
       setBear(getBearSettings());
+      setHookmark(getHookmarkSettings());
       setAgent(getAgentSwitchSettings());
       setPlanSave(getPlanSaveSettings());
       setUiPrefs(getUIPreferences());
@@ -134,6 +141,12 @@ export const Settings: React.FC<SettingsProps> = ({ taterMode, onTaterModeChange
     const newSettings = { enabled };
     setBear(newSettings);
     saveBearSettings(newSettings);
+  };
+
+  const handleHookmarkChange = (enabled: boolean) => {
+    const newSettings = { enabled };
+    setHookmark(newSettings);
+    saveHookmarkSettings(newSettings);
   };
 
   const handleAgentChange = (switchTo: AgentSwitchSettings['switchTo'], customName?: string) => {
@@ -676,6 +689,32 @@ tags: [plan, ...]
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
                             bear.enabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="border-t border-border" />
+
+                    {/* Hookmark Integration */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium">Hookmark</div>
+                        <div className="text-xs text-muted-foreground">
+                          Link saved plans to project folder (macOS)
+                        </div>
+                      </div>
+                      <button
+                        role="switch"
+                        aria-checked={hookmark.enabled}
+                        onClick={() => handleHookmarkChange(!hookmark.enabled)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          hookmark.enabled ? 'bg-primary' : 'bg-muted'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                            hookmark.enabled ? 'translate-x-6' : 'translate-x-1'
                           }`}
                         />
                       </button>

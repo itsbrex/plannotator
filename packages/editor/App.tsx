@@ -20,6 +20,7 @@ import { storage, getAutoClose } from '@plannotator/ui/utils/storage';
 import { UpdateBanner } from '@plannotator/ui/components/UpdateBanner';
 import { getObsidianSettings, getEffectiveVaultPath, isObsidianConfigured, CUSTOM_PATH_SENTINEL } from '@plannotator/ui/utils/obsidian';
 import { getBearSettings } from '@plannotator/ui/utils/bear';
+import { getHookmarkSettings } from '@plannotator/ui/utils/hookmark';
 import { getDefaultNotesApp } from '@plannotator/ui/utils/defaultNotesApp';
 import { getAgentSwitchSettings, getEffectiveAgentName } from '@plannotator/ui/utils/agentSwitch';
 import { getPlanSaveSettings } from '@plannotator/ui/utils/planSave';
@@ -549,7 +550,7 @@ const App: React.FC = () => {
       const planSaveSettings = getPlanSaveSettings();
 
       // Build request body - include integrations if enabled
-      const body: { obsidian?: object; bear?: object; feedback?: string; agentSwitch?: string; planSave?: { enabled: boolean; customPath?: string }; permissionMode?: string } = {};
+      const body: { obsidian?: object; bear?: object; hookmark?: { enabled: boolean }; feedback?: string; agentSwitch?: string; planSave?: { enabled: boolean; customPath?: string }; permissionMode?: string } = {};
 
       // Include permission mode for Claude Code
       if (origin === 'claude-code') {
@@ -579,6 +580,11 @@ const App: React.FC = () => {
 
       if (bearSettings.enabled) {
         body.bear = { plan: markdown };
+      }
+
+      const hookmarkSettings = getHookmarkSettings();
+      if (hookmarkSettings.enabled) {
+        body.hookmark = { enabled: true };
       }
 
       // Include annotations as feedback if any exist (for OpenCode "approve with notes")
